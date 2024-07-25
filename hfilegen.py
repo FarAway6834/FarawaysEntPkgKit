@@ -10,6 +10,43 @@ from os import chdir as cd
 from os import getcwd as pwd
 from csv import DictReader as csvr
 
+
+@wither(o)
+def mytomlload(fp):  #*.mytoml
+  ret = {}
+  now = None
+  iskbool = lambda x: x[0] == '[' and x[-1] == ']'
+  isvbool = lambda x: x[0] == '\t'
+  isvendbool = lambda x: x == ''
+  for n, i in enumerate(fp.readlines()):
+    if iskbool(i):
+      now = i.strip()
+      ret[now] = []
+    elif isvbool(i):
+      assert now != None, f'no key, but at {n} line is : {i}'
+      ret[now].append(i[1:])
+    elif isvendbool(i):
+      assert now != None, f'no key, but at {n} line is : {i}'
+      ret[now] = '\n'.join(ret[now])
+      now = None
+    else:
+      raise UnknownReteralError(f'Unknown Reteral at {n} first, {i}')
+  return ret
+
+
+def mytomldumpcore(**data):
+
+  @wither
+  def mytomldumprealcore(fp):
+    pass
+
+  return mytomldumprealcore
+
+
+def mytomldump(f, data):
+  mytomldumpcore(**data)(f)
+
+
 o, modo, mkcd, cdo = open, (lambda f, opener, mod: opener(f, mod)), (
     lambda x: (mkdir(x), cd(x))), (lambda: cd('..'))
 
