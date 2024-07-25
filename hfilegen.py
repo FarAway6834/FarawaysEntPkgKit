@@ -169,6 +169,24 @@ def define_hfilegen(f):
   fn = f'domh{fnt}.myhc'
   wither(w)(define_hfilegen_writer(f))(fn)
 
+def directdef_compile(x):
+  y = x.split()
+  y.append(y.pop())
+  y.append(y[-1].upper())
+  y.insert(0, y[-1])
+  return ' '.join(y[:-2]) + f'\n{} {}'.format(*y[-2:])
+
+@wither(o)
+def lvdomh_compile(fp):
+  for i in fp.readlines():
+    yield directdef_compile(i)
+
+def define_lowerver_hfilegen(f):
+  fnt, ext = s(f)
+  assert ext == '.lvdomh', TypeError(
+      f'Only Defs of MyH file supports in define_hfilegen, [file : {f}]')
+  fn = f'lv{fnt}.domh'
+  txtdumper(fn, lvdomh_compile(f))
 
 def includes_hfilegen(f):
   fnt, ext = s(f)
@@ -199,13 +217,11 @@ def typeheaders_gen(f):
   assert ext == '.thmh', TypeError(
       f'Only TypeHeader MyH file supports in typeheaders_gen, [file : {f}]')
   fn = f'types{fnt}.myhc'
-  wither(w)(define_hfilegen_writer(f, coresrc='typedef'))(fn)
-
+  wither(w)(define_hfilegen_writer(f, realform = "{} {};", coresrc='typedef'))(fn)
 
 def linextering(f):
   txtdumper(f'f2lned{f}.f2ln')(f)(txtloader(f).replace('\\', '\\\\').replace(
       'F2LN\n', 'F2LN\\n'))
-
 
 def unlinextering(f):
   fnt, ext = s(f)
