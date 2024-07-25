@@ -4,11 +4,41 @@ from os.path import splitext as s
 from os.path import join as j
 from os.path import isfile as isf
 from os.path import isdir as isd
+from os.path import dirname as getdir
+from os.path import abspath as getabs
 from os import listdir as ls
 from os import mkdir
 from os import chdir as cd
 from os import getcwd as pwd
+from subprocess import run as r
 from csv import DictReader as csvr
+from sys import path as module_load_roots
+
+
+def shs(x, logging=True):
+  v = r(x, shell=True)
+  if logging: print(v)
+
+
+o, modo, mkcd, cdo = open, (lambda f, opener, mod: opener(f, mod)), (
+    lambda x: (mkdir(x), cd(x))), (lambda: cd('..'))
+
+
+def wither(opener):
+
+  def with_deco(func):
+
+    def with_core(fn):
+      with opener(fn) as fp:
+        return func(fn)
+
+    return with_core
+
+  return with_deco
+
+
+class UnknownReteralError(Exception):
+  pass
 
 
 @wither(o)
@@ -38,30 +68,17 @@ def mytomldumpcore(**data):
 
   @wither
   def mytomldumprealcore(fp):
-    pass
+    for i, j in data.items():
+      fp.writelines(f'''\
+[{}]
+{}
+'''.format(i, j))
 
   return mytomldumprealcore
 
 
 def mytomldump(f, data):
   mytomldumpcore(**data)(f)
-
-
-o, modo, mkcd, cdo = open, (lambda f, opener, mod: opener(f, mod)), (
-    lambda x: (mkdir(x), cd(x))), (lambda: cd('..'))
-
-
-def wither(opener):
-
-  def with_deco(func):
-
-    def with_core(fn):
-      with opener(fn) as fp:
-        return func(fn)
-
-    return with_core
-
-  return with_deco
 
 
 @wither(o)
@@ -200,9 +217,17 @@ def unlinextering(f):
 
 
 class NtypecheckMyhdirNchangesButTxtOnly:
-  temp = j(__file__, '.temp.{}')
+  temp = j(getdir(getabs(__file__)), '.temp.{}')
 
   class libs:
+
+    @staticmethod
+    def movMydir(f):
+      ret = pwd()
+      if (cd(NtypecheckMyhdirNchangesButTxtOnly), ):
+        ret = [f(), ret]
+        cd(ret.pop())
+      return ret.pop()
 
     @staticmethod
     def dirtrees(D):
@@ -254,7 +279,7 @@ class NtypecheckMyhdirNchangesButTxtOnly:
 
     @staticmethod
     def jtft(x, y):
-      pass
+      mytomldump(x, getJ(y))
 
   class y2x:
 
@@ -266,4 +291,14 @@ class NtypecheckMyhdirNchangesButTxtOnly:
 
     @staticmethod
     def jtft(x, y):
-      pass
+      setJ(y, mytomlload(x))
+
+
+@NtypecheckMyhdirNchangesButTxtOnly.libs.movMydir
+def myhd_compile(x, justcheck=False):
+  I = len(module_load_roots)
+  module_load_roots.append(pwd())
+  if (cd(x), ):
+    assert 'hfilegener.py' in ls(), f'NotMYHDir [{x}], no hfilegner.py'
+    if not justcheck: shs('python hfilegener.py')
+    cd(module_load_roots.pop(I))
