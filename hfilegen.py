@@ -1,11 +1,17 @@
 from json import load as l
 from json import dump as d
 from os.path import splitext as s
+from os.path import join as j
 from os.path import isfile as isf
 from os.path import isdir as isd
+from os import listdir as ls
+from os import mkdir
+from os import chdir as cd
+from os import getcwd as pwd
 from csv import DictReader as csvr
 
-o, modo = open, (lambda f, opener, mod: opener(f, mod))
+o, modo, mkcd, cdo = open, (lambda f, opener, mod: opener(f, mod)), (
+    lambda x: (mkdir(x), cd(x))), (lambda: cd('..'))
 
 
 def wither(opener):
@@ -49,7 +55,7 @@ def modopenergetcore(opener=None, **types):
   })
 
 
-modlists = tsvloads('modlists.csv')
+modlists, getJ = tsvloads('modlists.csv'), (lambda f: l(o(f)))
 
 
 def modopenerget(opener=None):
@@ -59,8 +65,9 @@ def modopenerget(opener=None):
 for i, j in modopenerget(o):
   globals()[f'o{i}'] = j
 
-txtloader, txtdumper = wither(o)(
-    (lambda f: f.read())), (lambda f, x: wither(ow)((lambda f: f.write(x)))(f))
+txtloader, txtdumper, setJ = wither(o)(
+    (lambda f: f.read())), (lambda f, x: wither(ow)((lambda f: f.write(x)))
+                            (f)), (lambda f, x: d(x, ow(f)))
 
 
 def hfilegen_basic(f):
@@ -155,23 +162,58 @@ def unlinextering(f):
                                              'F2LN\n').replace('\\\\', '\\'))
 
 
-class NtypecheckMyhdirNchanges:
+class NtypecheckMyhdirNchangesButTxtOnly:
+  temp = j(__file__, '.temp.{}')
+
+  class libs:
+
+    @staticmethod
+    def dirtrees(D):
+      yield from (NtypecheckMyhdirNchangesButTxtOnly.libs.dirtrees(i)
+                  if isd(i) else i for i in ls(D))
+
+    @staticmethod
+    def good_conditional_tree(i):
+      return txtloader(i) if isinstance(
+          i, str) else NtypecheckMyhdirNchangesButTxtOnly.libs.dirdict(i)
+
+    @staticmethod
+    def dirdict(D):
+      return {
+          i: NtypecheckMyhdirNchangesButTxtOnly.libs.good_conditional_tree
+          for i in NtypecheckMyhdirNchangesButTxtOnly.libs.dirtrees(D)
+      }
+
+    @staticmethod
+    def jsondirdump(**v):
+      for i, j in v.items():
+        if isinstance(j, dict):
+          if mkcd(i):
+            NtypecheckMyhdirNchangesButTxtOnly.libs.jsondirdump(**j)
+            cdo()
+        else:
+          txtdumper(i, j)
 
   class jtft:
 
     @staticmethod
     def xing(x, y):
-      pass
+      setJ(y, NtypecheckMyhdirNchangesButTxtOnly.libs.dirdict(x))
 
     @staticmethod
     def unxing(x, y):
-      pass
+      ret = pwd()
+      if mkcd(y):
+        NtypecheckMyhdirNchangesButTxtOnly.libs.jsondirdump(**getJ(x))
+        cd(ret)
 
   class x2y:
 
     @staticmethod
     def dirs(x, y):
-      pass
+      temp = NtypecheckMyhdirNchangesButTxtOnly.temp.format('jftf')
+      NtypecheckMyhdirNchangesButTxtOnly.x2y.jtft(x, temp)
+      NtypecheckMyhdirNchangesButTxtOnly.jtft.unxing(temp, y)
 
     @staticmethod
     def jtft(x, y):
@@ -181,7 +223,9 @@ class NtypecheckMyhdirNchanges:
 
     @staticmethod
     def dirs(x, y):
-      pass
+      temp = NtypecheckMyhdirNchangesButTxtOnly.temp.format('jftf')
+      NtypecheckMyhdirNchangesButTxtOnly.jtft.xing(y, temp)
+      NtypecheckMyhdirNchangesButTxtOnly.y2x.jtft(x, temp)
 
     @staticmethod
     def jtft(x, y):
