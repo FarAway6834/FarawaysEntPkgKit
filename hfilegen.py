@@ -32,20 +32,48 @@ def tsvloads(f):
   ret[0].close()
   return ret[1]
 
+
 def modogen(mods):
+
   def openerget(opener):
     return lambda f: modo(f, opener, mods)
 
-def modopenergetcore(opener = None, **types):
-  return ({i : modogen(j) for i, j in types} if opener == None else {i : modogen(j)(opener) for i, j in types})
+
+def modopenergetcore(opener=None, **types):
+  return ({
+      i: modogen(j)
+      for i, j in types
+  } if opener == None else {
+      i: modogen(j)(opener)
+      for i, j in types
+  })
+
 
 modlists = tsvloads('modlists.csv')
 
-def modopenerget(opener = None):
-  return modopenerget(opener = None, **modlists)
 
-txtloader, txtdumper = wither(o)((lambda f : f.read())), (lambda f, x : wither(o)((lambda f : f.write(x)))(f))
+def modopenerget(opener=None):
+  return modopenerget(opener=None, **modlists)
+
+
+for i, j in modopenerget(o):
+  globals()[f'o{i}'] = j
+
+txtloader, txtdumper = wither(o)(
+    (lambda f: f.read())), (lambda f, x: wither(ow)((lambda f: f.write(x)))(f))
+
 
 def hfilegen_basic(f):
-  fname = 
-  txtdumper()
+  fnt, ext = s(f)
+  assert ext == '.myhc', TypeError(f'Only MyHCore file supports, [file : {f}]')
+  fn = f'{fnt}.h'
+  fhn = fn.replace('.', '_').upper()
+  fhn = f'_{fhn}'
+  src = txtloader(f)
+  txtdumper(f'''\
+#ifndef {fhn}
+# define {fhn}
+
+{src}
+
+#endif''')
